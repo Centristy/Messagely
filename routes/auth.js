@@ -24,18 +24,33 @@ const ExpressError = require("../expressError");
 router.post("/login", async function(req, res, next){
     try {
         let {username, password} = req.body;
-        if (await User.authenticate(username.password)){
+        if (await User.authenticate(username, password)){
             let token = jwt.sign({username}, SECRET_KEY);
             User.updateLoginTimestamp(username);
             return res.json({token});
         } else{
-            throw new ExpressError ("Password/Username do not match with any accoutn, 400")
+            throw new ExpressError ("Password/Username do not match with any accounts", 400)
         }
     }
     catch (error){
         return next (error);
     }
-})
+});
+
+
+router.post("/signup", async function(req, res, next){
+    try{
+
+        let {username} = await User.register(req.body);
+        let token = jwt.sign({username}, SECRET_KEY);
+        User.updateLoginTimestamp(username);
+        return res.json({token});
+
+    }
+    catch(error){
+        return next(error)
+    }
+});
 
 
 module.exports = router;
